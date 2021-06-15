@@ -29,7 +29,15 @@
     thead.dynamic-table-head
       tr
         th(v-for="column in columns")
-          | {{ column.title }}
+          .cell-flex
+            span {{ column.title }}
+
+            .sorter(
+              v-if="sortableColumns.find((c) => c.key === column.key)"
+              @click="toggleSort(column.key)"
+            ) 
+              span(v-if="sorter === column.key") {{ sorterDirection === 'up' ? '↑' : sorterDirection === 'down' ? '↓' : '↕️' }}
+              span(v-else) ↕️
 
     tbody.dynamic-table-body
       tr(v-for="row in pageContent")
@@ -81,6 +89,8 @@ export default {
     return {
       searchQuery: null,
       filters: [],
+      sorter: null,
+      sorterDirection: null,
       pageCurrent: 1
     }
   },
@@ -91,7 +101,7 @@ export default {
 
   computed: {
     filteredItems() {
-      let results = this.items
+      let results = Array.from(this.items)
       const activeFilters = this.filters.filter((f) => f.value)
 
       if (this.searchQuery) {
@@ -102,6 +112,10 @@ export default {
         activeFilters.forEach((filter) => {
           results = results.filter((r) => r[filter.key].toString() === filter.value.toString())
         })
+      }
+
+      if (this.sorter) {
+        results = results.sort(this.sorterAlgo)
       }
 
       return results
@@ -118,6 +132,10 @@ export default {
       return this.columns.filter((c) => c.filterable)
     },
 
+    sortableColumns() {
+      return this.columns.filter((c) => c.sortable)
+    },
+
     pagesCount() {
       return Math.ceil(this.filteredItems.length / this.itemsPerPage)
     }
@@ -130,6 +148,36 @@ export default {
 
     applyFilter() {
       this.pageCurrent = 1
+    },
+
+    toggleSort(key) {
+      if (this.sorter !== key) {
+        this.sorter = key
+        this.sorterDirection = 'up'
+        return
+      }
+
+      if (this.sorter === key && this.sorterDirection === 'up') {
+        this.sorterDirection = 'down'
+        return
+      }
+
+      if (this.sorter === key && this.sorterDirection === 'down') {
+        this.sorterDirection = null
+        this.sorter = null
+        return
+      }
+
+      this.pageCurrent = 1
+    },
+
+    sorterAlgo(a, b) {
+      if (typeof this.items[0][this.sorter] === 'number') {
+        if (this.sorterDirection === 'up') return a[this.sorter] - b[this.sorter]
+        if (this.sorterDirection === 'down') return b[this.sorter] - a[this.sorter]
+      }
+
+      // ToDo: сортировка по алфавиту
     },
 
     resetFilters() {
@@ -164,6 +212,14 @@ $bg-color: #eee
   tbody
     tr:nth-child(2n + 1)
       background-color: #f1f1f1
+
+// Сортировка
+.cell-flex
+  display: flex
+
+.sorter
+  margin-left: auto
+  cursor: pointer
 
 // Поиск и фильтры
 .filters

@@ -43,7 +43,7 @@ export default {
         { key: 'name', title: 'Название' },
         { key: 'weight', title: 'Вес', sortable: true, filterable: true },
         { key: 'colour', title: 'Цвет', filterable: true },
-        { key: 'stock', title: 'Склад' }
+        { key: 'stock', title: 'Склад', sortable: true }
       ]
     }
   }
