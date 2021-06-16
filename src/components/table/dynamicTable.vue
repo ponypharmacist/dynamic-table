@@ -8,6 +8,7 @@
       placeholder="Поиск"
     )
 
+    // Фильтры
     .dynamic-table-filter(
       v-for="filter, index in filterableColumns"
       :key="filter.key"
@@ -29,9 +30,10 @@
     thead.dynamic-table-head
       tr
         th(v-for="column in columns")
-          .cell-flex
+          .cell-content
             span {{ column.title }}
 
+            // Сортировка
             .sorter(
               v-if="sortableColumns.find((c) => c.key === column.key)"
               @click="toggleSort(column.key)"
@@ -39,26 +41,44 @@
               span(v-if="sorter === column.key") {{ sorterDirection === 'up' ? '↑' : sorterDirection === 'down' ? '↓' : '↕️' }}
               span(v-else) ↕️
 
+    // Ячейки в строках
     tbody.dynamic-table-body
       tr(v-for="row in pageContent")
         td(v-for="column in columns")
-          | {{ row[column.key] || '-' }}
+          slot(:name="`item.${column.key}`" :item="row") {{ row[column.key] || '-' }}
 
       // Если ничего не нашли/не нафильтровали
       tr
-        td(
+        td.not-found(
           v-if="!filteredItems.length"
           :colspan="columns.length"
         ) Ничего не найдено
 
   // Странички
   .dynamic-table-pagination
-    .page-text Страничка: 
-    .page(
-      v-for="page in pagesCount"
-      :class="{ active: pageCurrent === page}"
-      @click="pageCurrent = page"
-    ) {{ page }}
+    template(v-if="filteredItems.length")
+      .pagination-left
+        .pagination-text Страничка:
+        
+          span.pagination-prev(
+            :class="{ disabled: pageCurrent === 1 }"
+            @click="() => pageCurrent > 1 && pageCurrent--"
+          ) &larr;
+          
+          | {{ pageCurrent }} из {{ pagesCount }}
+
+          span.pagination-next(
+            :class="{ disabled: pageCurrent === pagesCount }"
+            @click="() => pageCurrent < pagesCount && pageCurrent++"
+          ) &rarr;
+
+      .pagination-right
+        .pagination-text {{ itemsRangeOnPage }} из {{ filteredItems.length }}
+    //- .page(
+    //-   v-for="page in pagesCount"
+    //-   :class="{ active: pageCurrent === page}"
+    //-   @click="pageCurrent = page"
+    //- ) {{ page }}
 
 </template>
 
@@ -100,6 +120,7 @@ export default {
   },
 
   computed: {
+    // Создаем список отфильтрованых и сортированых элементов
     filteredItems() {
       let results = Array.from(this.items)
       const activeFilters = this.filters.filter((f) => f.value)
@@ -121,6 +142,7 @@ export default {
       return results
     },
 
+    // Выделяем содержимое текущей страницы из списка элементов
     pageContent() {
       const startAt = (this.pageCurrent - 1) * this.itemsPerPage
       const endAt = (this.pageCurrent) * this.itemsPerPage
@@ -138,6 +160,13 @@ export default {
 
     pagesCount() {
       return Math.ceil(this.filteredItems.length / this.itemsPerPage)
+    },
+
+    itemsRangeOnPage() {
+      const from = (this.pageCurrent - 1) * this.itemsPerPage + 1
+      const to = this.pageCurrent * this.itemsPerPage > this.filteredItems.length ? this.filteredItems.length : this.pageCurrent * this.itemsPerPage
+
+      return `${from} - ${to}`
     }
   },
 
@@ -171,6 +200,7 @@ export default {
       this.pageCurrent = 1
     },
 
+    // Сортировщик пытается на глазок оценить какой тип данных в столбце и применяет соответствующую сортировку 
     sorterAlgo(a, b) {
       if (typeof this.items[0][this.sorter] === 'number') {
         if (this.sorterDirection === 'up') return a[this.sorter] - b[this.sorter]
@@ -180,6 +210,7 @@ export default {
       // ToDo: сортировка по алфавиту
     },
 
+    // Cброс фильтров
     resetFilters() {
       this.pageCurrent = 1
       this.searchQuery = null
@@ -196,6 +227,7 @@ export default {
 <style lang="sass" scoped>
 $bg-color: #eee
 
+// Таблица
 .dynamic-table
   display: inline-block
   margin: 12px auto
@@ -212,11 +244,14 @@ $bg-color: #eee
   tbody
     tr:nth-child(2n + 1)
       background-color: #f1f1f1
+  
+  .cell-content
+    display: flex
+
+  .not-found
+    text-align: center
 
 // Сортировка
-.cell-flex
-  display: flex
-
 .sorter
   margin-left: auto
   cursor: pointer
@@ -278,34 +313,40 @@ $bg-color: #eee
 .dynamic-table-pagination
   display: flex
   align-items: flex-start
-  justify-content: flex-start
-  flex-wrap: wrap
-  background-color: $bg-color
+  height: 24px
   padding-top: 10px
+  background-color: $bg-color
 
-  .page-text
+  .pagination-left
+
+  .pagination-right
+    margin-left: auto
+
+  .pagination-text
     height: 24px
     margin-right: 4px
     font-size: 90%
     line-height: 24px
     color: #777
 
-  .page
-    width: 24px
+  .pagination-prev,
+  .pagination-next
+    display: inline-block
+    width: 26px
     height: 24px
-    margin-right: 4px
-    font-size: 90%
+    margin: 0 6px
     line-height: 24px
-    background-color: #777
-    color: #fff
+    text-align: center
+    background-color: #fff
     border-radius: 3px
     cursor: pointer
 
     &:hover
-      background-color: #888
+      background-color: #fafafa
 
-    &.active
-      color: #777
+    &.disabled
       background-color: $bg-color
+      color: #bbb
+      cursor: default
 </style>
 

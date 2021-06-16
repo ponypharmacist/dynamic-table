@@ -2,14 +2,43 @@
 
 div(class="hello")
   dynamic-table(
-    :items="tableItems"
+    :items="vegetables"
     :columns="tableColumns"
     :items-per-page="5"
   )
+    template(#item.weight="{ item }")
+      | {{ item.weight }} g.
+
+    // Действия с объектами
+    template(#item.actions="{ item }")
+      span.remove-button(@click="removeVegetable(item.id)") Remove
+
+  .intro
+    h2 О таблице
+    p Использование:
+    pre
+      | dynamic-table(
+      |  :items="items"       - массив элементов
+      |  :columns="columns"   - определения столбцов
+      |  :items-per-page="5"  - количество элементов на страницу
+      | )
+
+    p Определения столбцов:
+    pre
+      | [
+      |   {
+      |     key: 'name',        - название параметра в элементе
+      |     title: 'Название',  - человеческое название столбца
+      |     sortable: true,     - включение опции сортировки
+      |     filterable: true,   - включение опции фильтрации
+      |   },
+      |   ...
+      | ]
 
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import dynamicTable from './table/dynamicTable'
 
 export default {
@@ -21,21 +50,6 @@ export default {
 
   data() {
     return {
-      // Список элементов для таблицы
-      tableItems: [
-        { name: 'Морковь', weight: 10, colour: 'red', stock: 2000, description: 'Описание, которое не выводится' },
-        { name: 'Яблоко', weight: 25, colour: 'green', stock: 1300, description: 'Описание, которое не выводится' },
-        { name: 'Капуста', weight: 680, colour: 'green', stock: 325, description: 'Описание, которое не выводится' },
-        { name: 'Баклажан', weight: 230, colour: 'purple', stock: 325, description: 'Описание, которое не выводится' },
-        { name: 'Лучок', weight: 5, colour: 'purple', stock: 4025, description: 'Описание, которое не выводится' },
-        { name: 'Укропчик', weight: 1, colour: 'green', stock: 25, description: 'Описание, которое не выводится' },
-        { name: 'Морковь', weight: 10, colour: 'green', stock: 2000, description: 'Описание, которое не выводится' },
-        { name: 'Яблоко', weight: 25, colour: 'green', stock: 1300, description: 'Описание, которое не выводится' },
-        { name: 'Капуста', weight: 680, colour: 'green', stock: 325, description: 'Описание, которое не выводится' },
-        { name: 'Баклажан', weight: 230, colour: 'purple', stock: 325, description: 'Описание, которое не выводится' },
-        { name: 'Лучок', weight: 5, colour: 'purple', stock: 4025, description: 'Описание, которое не выводится' },
-        { name: 'Укропчик', weight: 1, colour: 'green', stock: 25, description: 'Описание, которое не выводится' }
-      ],
       // Определение, какие столбцы следует применить к списку элементов
       // filterable - создает фильтр в таблице
       // sortable - включает сортировку столбца в таблице
@@ -43,9 +57,37 @@ export default {
         { key: 'name', title: 'Название' },
         { key: 'weight', title: 'Вес', sortable: true, filterable: true },
         { key: 'colour', title: 'Цвет', filterable: true },
-        { key: 'stock', title: 'Склад', sortable: true }
+        { key: 'stock', title: 'Склад', sortable: true },
+        { key: 'actions', title: '-' }
       ]
     }
+  },
+
+  computed: {
+    ...mapGetters({
+      // Список элементов для таблицы
+      vegetables: 'dynamicTable/vegetables'
+    })
+  },
+
+  methods: {
+    ...mapMutations({
+      removeVegetable: 'dynamicTable/removeVegetable'
+    })
   }
 }
 </script>
+
+<style lang="sass" scoped>
+.intro
+  width: 600px
+  margin: 0 auto 100px
+  text-align: left
+
+  p
+    margin-bottom: 8px
+
+.remove-button
+  text-decoration: underline
+  cursor: pointer
+</style>
