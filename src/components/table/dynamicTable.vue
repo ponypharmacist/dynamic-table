@@ -74,11 +74,6 @@
 
       .pagination-right
         .pagination-text {{ itemsRangeOnPage }} из {{ filteredItems.length }}
-    //- .page(
-    //-   v-for="page in pagesCount"
-    //-   :class="{ active: pageCurrent === page}"
-    //-   @click="pageCurrent = page"
-    //- ) {{ page }}
 
 </template>
 
@@ -201,13 +196,25 @@ export default {
     },
 
     // Сортировщик пытается на глазок оценить какой тип данных в столбце и применяет соответствующую сортировку 
-    sorterAlgo(a, b) {
+    sorterAlgo(varA, varB) {
+      const sortUp = this.sorterDirection === 'up'
+      const sortDown = this.sorterDirection === 'down'
+
+      const a = varA[this.sorter]
+      const b = varB[this.sorter]
+
       if (typeof this.items[0][this.sorter] === 'number') {
-        if (this.sorterDirection === 'up') return a[this.sorter] - b[this.sorter]
-        if (this.sorterDirection === 'down') return b[this.sorter] - a[this.sorter]
+        if (sortUp) return a - b
+        if (sortDown) return b - a
       }
 
-      // ToDo: сортировка по алфавиту
+      if (typeof this.items[0][this.sorter] === 'string') {
+        if (a.toUpperCase() < b.toUpperCase()) {
+          return sortUp ? -1 : 1
+        }
+        else if (a.toUpperCase() > b.toUpperCase()) return sortUp ? 1 : -1
+        else return 0
+      }
     },
 
     // Cброс фильтров
@@ -215,6 +222,8 @@ export default {
       this.pageCurrent = 1
       this.searchQuery = null
       this.filters = []
+      this.sorter = null
+      this.sorterDirection = null
 
       this.filterableColumns.forEach((filter) => {
         this.filters.push({ key: filter.key, value: null })

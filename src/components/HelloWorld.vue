@@ -54,10 +54,10 @@ export default {
       // filterable - создает фильтр в таблице
       // sortable - включает сортировку столбца в таблице
       tableColumns: [
-        { key: 'name', title: 'Название' },
+        { key: 'name', title: 'Название', sortable: true },
         { key: 'weight', title: 'Вес', sortable: true, filterable: true },
         { key: 'colour', title: 'Цвет', filterable: true },
-        { key: 'stock', title: 'Склад', sortable: true },
+        { key: 'stock', title: 'Склад' },
         { key: 'actions', title: '-' }
       ]
     }

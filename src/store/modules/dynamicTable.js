@@ -14,7 +14,8 @@ export default {
       { id: 9, name: 'Капуста', weight: 680, colour: 'green', stock: 325, description: 'Описание, которое не выводится' },
       { id: 10, name: 'Баклажан', weight: 230, colour: 'purple', stock: 325, description: 'Описание, которое не выводится' },
       { id: 11, name: 'Лучок', weight: 5, colour: 'purple', stock: 4025, description: 'Описание, которое не выводится' },
-      { id: 12, name: 'Укропчик', weight: 1, colour: 'green', stock: 25, description: 'Описание, которое не выводится' }
+      { id: 12, name: 'Укропчик', weight: 1, colour: 'green', stock: 25, description: 'Описание, которое не выводится' },
+      { id: 12, name: 'Перец', weight: 15, colour: 'yellow', stock: 2500, description: 'Описание, которое не выводится' }
     ]
   },
 
